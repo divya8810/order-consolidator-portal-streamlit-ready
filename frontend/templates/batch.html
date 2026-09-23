@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Batch #{{ batch.id }} — Order Consolidator{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">BATCH #{{ batch.id }}</p>
+  <h1>{{ batch.created_at.strftime('%d-%m-%Y %H:%M') }}</h1>
+  {% if batch.uploaded_by %}<p class="lede">Uploaded by {{ batch.uploaded_by }}</p>{% endif %}
+</section>
+
+<div class="summary-strip">
+  <div class="cell"><span class="val">{{ batch.file_count }}</span><span class="lbl">files read</span></div>
+  <div class="cell"><span class="val">{{ batch.line_count }}</span><span class="lbl">order lines</span></div>
+  <div class="cell"><span class="val">{{ batch.total_qty | int }}</span><span class="lbl">total qty (cs)</span></div>
+</div>
+
+{% if batch.output_filename %}
+<a class="primary as-button" href="{{ url_for('main.download', batch_id=batch.id) }}">Download Consolidated Order Booking.xlsx</a>
+{% endif %}
+
+<h2 class="section-title">Files in this batch</h2>
+<table class="ledger">
+  <thead><tr><th>File</th><th>DB Name</th><th>DB Code</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for sf in batch.source_files %}
+    <tr class="{{ 'row-err' if sf.status == 'error' else '' }}">
+      <td>{{ sf.filename }}</td>
+      <td>{{ sf.db_name or '—' }}</td>
+      <td>{{ sf.db_code or '—' }}</td>
+      <td>
+        {% if sf.status == 'ok' %}{{ sf.line_count }} line(s) ok
+        {% else %}{{ sf.error_message }}{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if batch.lines %}
+<h2 class="section-title">Order lines</h2>
+<div class="table-wrap">
+  <table class="ledger mono">
+    <thead>
+      <tr><th>Date</th><th>DB Code</th><th>DB Name</th><th>Category</th><th>Item Name</th><th>MRP</th><th>Qty in Cs</th></tr>
+    </thead>
+    <tbody>
+      {% for line in batch.lines[:300] %}
+      <tr>
+        <td>{{ line.order_date }}</td>
+        <td>{{ line.db_code or '' }}</td>
+        <td>{{ line.db_name or '' }}</td>
+        <td>{{ line.category or '' }}</td>
+        <td class="col-item">{{ line.item_name or '' }}</td>
+        <td>{{ line.mrp or '' }}</td>
+        <td>{{ line.qty_in_cs | int }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if batch.lines|length > 300 %}
+  <p class="more-rows">+ {{ batch.lines|length - 300 }} more line(s) in the downloaded file</p>
+  {% endif %}
+</div>
+{% endif %}
+
+<p><a href="{{ url_for('main.index') }}">← Upload another batch</a></p>
+{% endblock %}

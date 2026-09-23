@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Order Consolidator{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">TERRESTRIAL ORDER FORMAT — CONSOLIDATOR</p>
+  <h1>Merge order booking files</h1>
+  <p class="lede">Upload any number of "Order Booking Format" files. Each one's
+    DB Name, DB Code and Date are read from its header block, and only the
+    item lines that were actually ordered are kept.</p>
+</section>
+
+<form action="{{ url_for('main.upload') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+  <div class="dropzone" id="dropzone" tabindex="0">
+    <p class="dz-title">Drop .xlsx files here, or click to browse</p>
+    <p class="dz-sub">You can select several at once</p>
+    <input type="file" name="files" id="fileInput" multiple accept=".xlsx,.xlsm">
+  </div>
+  <ul class="filelist" id="fileList"></ul>
+
+  <div class="form-row">
+    <label for="uploaded_by">Your name (optional)</label>
+    <input type="text" name="uploaded_by" id="uploaded_by" placeholder="e.g. Divya">
+  </div>
+
+  <button class="primary" type="submit" id="submitBtn" disabled>Consolidate</button>
+</form>
+
+{% if recent %}
+<section class="recent">
+  <h2>Recent batches</h2>
+  <table class="ledger">
+    <thead>
+      <tr><th>When</th><th>Files</th><th>Lines</th><th>Total Qty</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for b in recent %}
+      <tr>
+        <td>{{ b.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+        <td>{{ b.file_count }}</td>
+        <td>{{ b.line_count }}</td>
+        <td>{{ b.total_qty | int }}</td>
+        <td><a href="{{ url_for('main.view_batch', batch_id=b.id) }}">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a class="see-all" href="{{ url_for('main.history') }}">See full history →</a>
+</section>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

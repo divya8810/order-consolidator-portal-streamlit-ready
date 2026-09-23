@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}History — Order Consolidator{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">ALL BATCHES</p>
+  <h1>History</h1>
+</section>
+
+<table class="ledger">
+  <thead>
+    <tr><th>When</th><th>Uploaded by</th><th>Files</th><th>Lines</th><th>Total Qty</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for b in batches %}
+    <tr>
+      <td>{{ b.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+      <td>{{ b.uploaded_by or '—' }}</td>
+      <td>{{ b.file_count }}</td>
+      <td>{{ b.line_count }}</td>
+      <td>{{ b.total_qty | int }}</td>
+      <td><a href="{{ url_for('main.view_batch', batch_id=b.id) }}">View</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">No batches yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p><a href="{{ url_for('main.index') }}">← Upload a batch</a></p>
+{% endblock %}
